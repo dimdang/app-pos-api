@@ -19,7 +19,6 @@ class ProductCollection extends ResourceCollection
             $countReviews = $item->reviews->count();
             return [
                 'product_name' => $item->product_name,
-                'product_detail' =>$item->product_detail,
                 'product_price' =>$item->product_price,
                 'discount' =>$item->discount,
                 'totPrice' => round((1- ($item->discount/100)) * $item->product_price, 2),
