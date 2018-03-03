@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ProductNotBelongsToUser;
 use App\Http\Requests\Request\ProductRequest;
 use App\Http\Resources\Product\ProductCollection;
 use App\Model\Product;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Http\Request;
 use App\Http\Resources\Product\ProductResource;
@@ -50,13 +52,13 @@ class ProductController extends Controller
     {
 
         $product = new Product;
-        $product -> product_name = $request -> product_name;
-        $product -> product_detail = $request -> product_detail;
-        $product -> product_price = $request -> product_price;
-        $product -> stock = $request -> stock;
-        $product -> discount = $request -> discount;
+        $product->product_name = $request->product_name;
+        $product->product_detail = $request->product_detail;
+        $product->product_price = $request->product_price;
+        $product->stock = $request->stock;
+        $product->discount = $request->discount;
 
-        $product -> save();
+        $product->save();
 
         return response([
             'data' => new ProductResource($product)
@@ -91,10 +93,12 @@ class ProductController extends Controller
      * @param  \Illuminate\Http\Request $request
      * @param  \App\Model\Product $product
      * @return \Illuminate\Http\Response
+     * @throws ProductNotBelongsToUser
      */
     public function update(Request $request, Product $product)
     {
-        $product -> update($request->all());
+        $this -> ProductUserCheck($product);
+        $product->update($request->all());
 
         return response([
             'data' => new ProductResource($product)
@@ -110,7 +114,18 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        $product -> delete();
+        $product->delete();
         return response(null, Response::HTTP_CREATED);
+    }
+
+    /**
+     * @param $product
+     * @throws ProductNotBelongsToUser
+     */
+    public function ProductUserCheck($product)
+    {
+        if (Auth::id() !== $product -> user_id){
+            throw new ProductNotBelongsToUser;
+        }
     }
 }
